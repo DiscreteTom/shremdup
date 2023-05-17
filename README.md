@@ -14,6 +14,6 @@ shremdup.exe <port>
 
 ## Protocol
 
-See [shremdup.proto](shremdup.proto).
+See [shremdup.proto](https://github.com/DiscreteTom/shremdup/blob/main/proto/shremdup.proto).
 
-## CHANGELOG
+## [CHANGELOG](https://github.com/DiscreteTom/shremdup/blob/main/CHANGELOG.md)
