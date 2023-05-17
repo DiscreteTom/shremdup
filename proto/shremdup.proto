@@ -1,7 +1,7 @@
 syntax = "proto3";
-package hdd;
+package shremdup;
 
-service HDD {
+service Shremdup {
   rpc ListDisplays (ListDisplaysRequest) returns (ListDisplaysReply);
   rpc GetDisplay(GetDisplayRequest) returns (GetDisplayReply);
   rpc CreateCapture(CreateCaptureRequest) returns (CreateCaptureReply);

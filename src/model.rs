@@ -4,13 +4,13 @@ use tokio::sync::{mpsc, oneshot, Mutex};
 use windows::Win32::Graphics::Dxgi::DXGI_OUTPUT_DESC;
 
 pub type ServerMutex = Arc<Mutex<()>>;
-pub type RequestSender = mpsc::Sender<(HddRequest, oneshot::Sender<HddReply>)>;
-pub type ReplyReceiver = mpsc::Receiver<(HddRequest, oneshot::Sender<HddReply>)>;
+pub type RequestSender = mpsc::Sender<(ShremdupRequest, oneshot::Sender<ShremdupReply>)>;
+pub type ReplyReceiver = mpsc::Receiver<(ShremdupRequest, oneshot::Sender<ShremdupReply>)>;
 
-tonic::include_proto!("hdd");
+tonic::include_proto!("shremdup");
 
 #[derive(Debug)]
-pub enum HddRequest {
+pub enum ShremdupRequest {
   ListDisplays,
   GetDisplay(u32),
   CreateCapture(u32, String),
@@ -19,7 +19,7 @@ pub enum HddRequest {
 }
 
 #[derive(Debug)]
-pub enum HddReply {
+pub enum ShremdupReply {
   ListDisplays(Result<Vec<DisplayInfo>>),
   GetDisplay(Result<DisplayInfo>),
   CreateCapture(Result<()>),
