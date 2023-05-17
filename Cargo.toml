@@ -2,7 +2,11 @@
 name = "shremdup"
 version = "0.1.0"
 edition = "2021"
-
+license = "MIT"
+authors = ["DiscreteTom <discrete_tom@outlook.com>"]
+description = "Call Windows Desktop Duplication API from through gRPC and shared-memory."
+repository = "https://github.com/DiscreteTom/shremdup"
+keywords = ["shared-memory", "desktop-duplication", "windows", "grpc"]
 
 [dependencies]
 rusty-duplication = "0.3"
