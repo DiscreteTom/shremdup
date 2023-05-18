@@ -13,7 +13,7 @@ tonic::include_proto!("shremdup");
 pub enum ShremdupRequest {
   ListDisplays,
   GetDisplay(u32),
-  CreateCapture(u32, String),
+  CreateCapture(u32, String, bool),
   DeleteCapture(u32),
   TakeCapture(u32),
 }

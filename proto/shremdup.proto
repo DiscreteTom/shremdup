@@ -25,6 +25,7 @@ message GetDisplayReply {
 message CreateCaptureRequest {
   uint32 id = 1;
   string name = 2;
+  bool open = 3;
 }
 message CreateCaptureReply {
 }

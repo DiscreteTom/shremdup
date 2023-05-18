@@ -76,7 +76,10 @@ impl Shremdup for TheShremdup {
     let request = request.into_inner();
     if let Err(err) = self
       .sender
-      .send((ShremdupRequest::CreateCapture(request.id, request.name), tx))
+      .send((
+        ShremdupRequest::CreateCapture(request.id, request.name, request.open),
+        tx,
+      ))
       .await
     {
       return Err(Status::internal(err.to_string()));

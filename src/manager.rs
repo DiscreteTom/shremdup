@@ -30,13 +30,19 @@ pub async fn manager_thread(mut rx: ReplyReceiver) {
           Err(err) => ShremdupReply::GetDisplay(Err(err)),
         },
       },
-      ShremdupRequest::CreateCapture(id, name) => {
+      ShremdupRequest::CreateCapture(id, name, open) => {
         if capturer_map.contains_key(&id) {
           ShremdupReply::CreateCapture(Err("already exists".to_string()))
         } else {
           match manager.contexts.get(id as usize) {
             None => ShremdupReply::CreateCapture(Err("invalid id".to_string())),
-            Some(ctx) => match ctx.shared_capturer(&name) {
+            Some(ctx) => match {
+              if open {
+                ctx.shared_capturer_open(&name)
+              } else {
+                ctx.shared_capturer(&name)
+              }
+            } {
               Err(err) => ShremdupReply::CreateCapture(Err(err)),
               Ok(capturer) => {
                 capturer_map.insert(id, capturer);
