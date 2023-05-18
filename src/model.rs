@@ -1,4 +1,4 @@
-use rusty_duplication::utils::Result;
+use rusty_duplication::model::Result;
 use std::sync::Arc;
 use tokio::sync::{mpsc, oneshot, Mutex};
 use windows::Win32::Graphics::Dxgi::DXGI_OUTPUT_DESC;
@@ -24,7 +24,7 @@ pub enum ShremdupReply {
   GetDisplay(Result<DisplayInfo>),
   CreateCapture(Result<()>),
   DeleteCapture(Result<()>),
-  TakeCapture(Result<bool>),
+  TakeCapture(Result<(bool, Option<PointerPosition>, Option<PointerShape>)>),
 }
 
 pub trait DxgiOutputDescExt {

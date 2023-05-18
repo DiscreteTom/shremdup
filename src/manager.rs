@@ -1,4 +1,6 @@
-use crate::model::{DxgiOutputDescExt, ReplyReceiver, ShremdupReply, ShremdupRequest};
+use crate::model::{
+  DxgiOutputDescExt, PointerPosition, PointerShape, ReplyReceiver, ShremdupReply, ShremdupRequest,
+};
 use rusty_duplication::{
   capturer::{model::Capturer, shared::SharedCapturer},
   manager::Manager,
@@ -52,13 +54,28 @@ pub async fn manager_thread(mut rx: ReplyReceiver) {
       }
       ShremdupRequest::TakeCapture(id) => match capturer_map.get_mut(&id) {
         None => ShremdupReply::TakeCapture(Err("invalid id".to_string())),
-        Some(capturer) => match capturer.capture() {
+        Some(capturer) => match capturer.safe_capture_with_pointer_shape() {
           Err(err) => ShremdupReply::TakeCapture(Err(err)),
-          Ok(capture) => {
-            if capture.desktop_updated() {
-              ShremdupReply::TakeCapture(Ok(true))
+          Ok((frame_info, pointer_shape_info)) => {
+            if !frame_info.mouse_updated() {
+              ShremdupReply::TakeCapture(Ok((frame_info.desktop_updated(), None, None)))
             } else {
-              ShremdupReply::TakeCapture(Ok(false))
+              let pointer_shape_info = pointer_shape_info.unwrap();
+              ShremdupReply::TakeCapture(Ok((
+                frame_info.desktop_updated(),
+                Some(PointerPosition {
+                  visible: frame_info.PointerPosition.Visible.as_bool(),
+                  x: frame_info.PointerPosition.Position.x,
+                  y: frame_info.PointerPosition.Position.y,
+                }),
+                Some(PointerShape {
+                  shape_type: pointer_shape_info.Type,
+                  width: pointer_shape_info.Width,
+                  height: pointer_shape_info.Height,
+                  pitch: pointer_shape_info.Pitch,
+                  data: capturer.pointer_shape_buffer().to_vec(),
+                }),
+              )))
             }
           }
         },

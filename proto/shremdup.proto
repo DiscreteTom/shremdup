@@ -39,7 +39,9 @@ message TakeCaptureRequest {
   uint32 id = 1;
 }
 message TakeCaptureReply {
-  bool update = 1;
+  bool desktop_updated = 1;
+  optional PointerPosition pointer_position = 2;
+  optional PointerShape pointer_shape = 3;
 }
 
 message DisplayInfo {
@@ -49,4 +51,18 @@ message DisplayInfo {
   int32 right = 4;
   string name = 5;
   int32 rotation = 6;
+}
+
+message PointerPosition {
+  bool visible = 1;
+  int32 x = 2;
+  int32 y = 3;
+}
+
+message PointerShape {
+  uint32 shape_type = 1;
+  uint32 width = 2;
+  uint32 height = 3;
+  uint32 pitch = 4;
+  bytes data = 5;
 }

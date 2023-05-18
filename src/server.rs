@@ -127,7 +127,13 @@ impl Shremdup for TheShremdup {
     }
     match rx.await {
       Err(_) => Err(Status::internal("failed to receive reply")),
-      Ok(ShremdupReply::TakeCapture(Ok(update))) => Ok(Response::new(TakeCaptureReply { update })),
+      Ok(ShremdupReply::TakeCapture(Ok((desktop_updated, pointer_position, pointer_shape)))) => {
+        Ok(Response::new(TakeCaptureReply {
+          desktop_updated,
+          pointer_position,
+          pointer_shape,
+        }))
+      }
       Ok(ShremdupReply::TakeCapture(Err(err))) => Err(Status::internal(err.to_string())),
       Ok(_) => Err(Status::internal("invalid reply")),
     }
