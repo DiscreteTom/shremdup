@@ -3,6 +3,7 @@ use crate::model::{
 };
 use rusty_duplication::{
   capturer::{model::Capturer, shared::SharedCapturer},
+  error::Error,
   manager::Manager,
   utils::FrameInfoExt,
 };
@@ -17,25 +18,28 @@ pub async fn manager_thread(mut rx: ReplyReceiver) {
     let reply = match req {
       ShremdupRequest::ListDisplays => {
         let mut displays = Vec::new();
-        manager.contexts.iter().for_each(|ctx| match ctx.desc() {
-          Ok(desc) => displays.push(desc.to_info()),
-          Err(err) => println!("ListDisplays: {:?}", err),
-        });
+        manager
+          .contexts
+          .iter()
+          .for_each(|ctx| match ctx.dxgi_output_desc() {
+            Ok(dxgi_output_desc) => displays.push(dxgi_output_desc.to_info()),
+            Err(err) => println!("ListDisplays: {:?}", err),
+          });
         ShremdupReply::ListDisplays(Ok(displays))
       }
       ShremdupRequest::GetDisplay(id) => match manager.contexts.get(id as usize) {
-        None => ShremdupReply::GetDisplay(Err("invalid id".to_string())),
-        Some(ctx) => match ctx.desc() {
-          Ok(desc) => ShremdupReply::GetDisplay(Ok(desc.to_info())),
+        None => ShremdupReply::GetDisplay(Err(Error::new("invalid id"))),
+        Some(ctx) => match ctx.dxgi_output_desc() {
+          Ok(dxgi_output_desc) => ShremdupReply::GetDisplay(Ok(dxgi_output_desc.to_info())),
           Err(err) => ShremdupReply::GetDisplay(Err(err)),
         },
       },
       ShremdupRequest::CreateCapture(id, name, open) => {
         if capturer_map.contains_key(&id) {
-          ShremdupReply::CreateCapture(Err("already exists".to_string()))
+          ShremdupReply::CreateCapture(Err(Error::new("already exists")))
         } else {
           match manager.contexts.get(id as usize) {
-            None => ShremdupReply::CreateCapture(Err("invalid id".to_string())),
+            None => ShremdupReply::CreateCapture(Err(Error::new("invalid id"))),
             Some(ctx) => match {
               if open {
                 ctx.shared_capturer_open(&name)
@@ -59,7 +63,7 @@ pub async fn manager_thread(mut rx: ReplyReceiver) {
         ShremdupReply::DeleteCapture(Ok(()))
       }
       ShremdupRequest::TakeCapture(id) => match capturer_map.get_mut(&id) {
-        None => ShremdupReply::TakeCapture(Err("invalid id".to_string())),
+        None => ShremdupReply::TakeCapture(Err(Error::new("invalid id"))),
         Some(capturer) => match capturer.safe_capture_with_pointer_shape() {
           Err(err) => ShremdupReply::TakeCapture(Err(err)),
           Ok((frame_info, pointer_shape_info)) => {
