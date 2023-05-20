@@ -1,13 +1,15 @@
 use crate::model::{
-  DxgiOutputDescExt, PointerPosition, PointerShape, ReplyReceiver, ShremdupReply, ShremdupRequest,
+  DisplayInfo, PointerPosition, PointerShape, ReplyReceiver, ShremdupReply, ShremdupRequest,
 };
 use rusty_duplication::{
   capturer::{model::Capturer, shared::SharedCapturer},
+  duplication_context::DuplicationContext,
   error::Error,
   manager::Manager,
   utils::FrameInfoExt,
 };
 use std::collections::HashMap;
+use windows::Win32::Graphics::Dxgi::DXGI_OUTPUT_DESC;
 
 pub async fn manager_thread(mut rx: ReplyReceiver) {
   let manager = Manager::default().unwrap();
@@ -22,7 +24,7 @@ pub async fn manager_thread(mut rx: ReplyReceiver) {
           .contexts
           .iter()
           .for_each(|ctx| match ctx.dxgi_output_desc() {
-            Ok(dxgi_output_desc) => displays.push(dxgi_output_desc.to_info()),
+            Ok(dxgi_output_desc) => displays.push(get_display_info(&dxgi_output_desc, ctx)),
             Err(err) => println!("ListDisplays: {:?}", err),
           });
         ShremdupReply::ListDisplays(Ok(displays))
@@ -30,7 +32,9 @@ pub async fn manager_thread(mut rx: ReplyReceiver) {
       ShremdupRequest::GetDisplay(id) => match manager.contexts.get(id as usize) {
         None => ShremdupReply::GetDisplay(Err(Error::new("invalid id"))),
         Some(ctx) => match ctx.dxgi_output_desc() {
-          Ok(dxgi_output_desc) => ShremdupReply::GetDisplay(Ok(dxgi_output_desc.to_info())),
+          Ok(dxgi_output_desc) => {
+            ShremdupReply::GetDisplay(Ok(get_display_info(&dxgi_output_desc, ctx)))
+          }
           Err(err) => ShremdupReply::GetDisplay(Err(err)),
         },
       },
@@ -92,5 +96,19 @@ pub async fn manager_thread(mut rx: ReplyReceiver) {
       },
     };
     tx.send(reply).unwrap();
+  }
+}
+
+fn get_display_info(dxgi_output_desc: &DXGI_OUTPUT_DESC, ctx: &DuplicationContext) -> DisplayInfo {
+  let dxgi_outdupl_desc = ctx.dxgi_outdupl_desc();
+  DisplayInfo {
+    bottom: dxgi_output_desc.DesktopCoordinates.bottom,
+    top: dxgi_output_desc.DesktopCoordinates.top,
+    left: dxgi_output_desc.DesktopCoordinates.left,
+    right: dxgi_output_desc.DesktopCoordinates.right,
+    name: String::from_utf16_lossy(&dxgi_output_desc.DeviceName),
+    rotation: dxgi_output_desc.Rotation.0,
+    pixel_width: dxgi_outdupl_desc.ModeDesc.Width,
+    pixel_height: dxgi_outdupl_desc.ModeDesc.Height,
   }
 }

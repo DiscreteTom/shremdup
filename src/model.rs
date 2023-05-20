@@ -1,7 +1,6 @@
 use rusty_duplication::model::Result;
 use std::sync::Arc;
 use tokio::sync::{mpsc, oneshot, Mutex};
-use windows::Win32::Graphics::Dxgi::DXGI_OUTPUT_DESC;
 
 pub type ServerMutex = Arc<Mutex<()>>;
 pub type RequestSender = mpsc::Sender<(ShremdupRequest, oneshot::Sender<ShremdupReply>)>;
@@ -25,21 +24,4 @@ pub enum ShremdupReply {
   CreateCapture(Result<()>),
   DeleteCapture(Result<()>),
   TakeCapture(Result<(bool, Option<PointerPosition>, Option<PointerShape>)>),
-}
-
-pub trait DxgiOutputDescExt {
-  fn to_info(&self) -> DisplayInfo;
-}
-
-impl DxgiOutputDescExt for DXGI_OUTPUT_DESC {
-  fn to_info(&self) -> DisplayInfo {
-    DisplayInfo {
-      bottom: self.DesktopCoordinates.bottom,
-      top: self.DesktopCoordinates.top,
-      left: self.DesktopCoordinates.left,
-      right: self.DesktopCoordinates.right,
-      name: String::from_utf16_lossy(&self.DeviceName),
-      rotation: self.Rotation.0,
-    }
-  }
 }

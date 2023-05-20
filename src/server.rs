@@ -35,9 +35,7 @@ impl Shremdup for TheShremdup {
     }
     match rx.await {
       Err(_) => Err(Status::internal("failed to receive reply")),
-      Ok(ShremdupReply::ListDisplays(Ok(displays))) => {
-        Ok(Response::new(ListDisplaysReply { infos: displays }))
-      }
+      Ok(ShremdupReply::ListDisplays(Ok(infos))) => Ok(Response::new(ListDisplaysReply { infos })),
       Ok(ShremdupReply::ListDisplays(Err(err))) => Err(Status::internal(err.to_string())),
       Ok(_) => Err(Status::internal("invalid reply")),
     }
