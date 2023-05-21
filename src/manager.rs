@@ -91,13 +91,17 @@ pub async fn manager_thread(mut rx: ReplyReceiver) {
                   x: frame_info.PointerPosition.Position.x,
                   y: frame_info.PointerPosition.Position.y,
                 }),
-                Some(PointerShape {
-                  shape_type: pointer_shape_info.Type,
-                  width: pointer_shape_info.Width,
-                  height: pointer_shape_info.Height,
-                  pitch: pointer_shape_info.Pitch,
-                  data: capturer.pointer_shape_buffer().to_vec(),
-                }),
+                if capturer.pointer_shape_updated() {
+                  Some(PointerShape {
+                    shape_type: pointer_shape_info.Type,
+                    width: pointer_shape_info.Width,
+                    height: pointer_shape_info.Height,
+                    pitch: pointer_shape_info.Pitch,
+                    data: capturer.pointer_shape_buffer().to_vec(),
+                  })
+                } else {
+                  None
+                },
               )))
             }
           }
