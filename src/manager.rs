@@ -54,7 +54,7 @@ pub async fn manager_thread(mut rx: ReplyReceiver) {
               Err(err) => ShremdupReply::CreateCapture(Err(err)),
               Ok(capturer) => {
                 capturer_map.insert(id, capturer);
-                println!("CreateCapturer: id: {}, name: {}", id, name);
+                println!("CreateCapturer: id: {}, name: {}, open: {}", id, name, open);
                 ShremdupReply::CreateCapture(Ok(()))
               }
             },
