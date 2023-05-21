@@ -12,7 +12,7 @@ use std::collections::HashMap;
 use windows::Win32::Graphics::Dxgi::DXGI_OUTPUT_DESC;
 
 pub async fn manager_thread(mut rx: ReplyReceiver) {
-  let manager = Manager::default().unwrap();
+  let manager = Manager::new(0).unwrap();
   let mut capturer_map: HashMap<u32, SharedCapturer> = HashMap::new();
 
   loop {
