@@ -1,10 +1,11 @@
 # shremdup
 
-[![license](https://img.shields.io/crates/l/shremdup?style=flat-square)](https://crates.io/crates/shremdup)
-[![version](https://img.shields.io/crates/v/shremdup?style=flat-square)](https://crates.io/crates/shremdup)
-[![docs.rs](https://img.shields.io/docsrs/shremdup?style=flat-square)](https://docs.rs/shremdup/latest)
+![license](https://img.shields.io/github/license/DiscreteTom/shremdup?style=flat-square)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/DiscreteTom/shremdup?style=flat-square)
 
-Call Windows Desktop Duplication API from through gRPC and shared-memory.
+Call Windows Desktop Duplication API through gRPC and shared-memory.
+
+## [Download](https://github.com/DiscreteTom/shremdup/releases)
 
 ## Usage
 
@@ -14,6 +15,6 @@ shremdup.exe <port>
 
 ## Protocol
 
-See [shremdup.proto](https://github.com/DiscreteTom/shremdup/blob/main/proto/shremdup.proto).
+See [shremdup.proto](https://github.com/DiscreteTom/shremdup/blob/main/proto/shremdup.proto) for the gRPC definition.
 
 ## [CHANGELOG](https://github.com/DiscreteTom/shremdup/blob/main/CHANGELOG.md)
