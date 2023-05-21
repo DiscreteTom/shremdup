@@ -13,6 +13,12 @@ Call Windows Desktop Duplication API through gRPC and shared-memory.
 shremdup.exe <port>
 ```
 
+## Build
+
+```bash
+cargo build --release
+```
+
 ## Protocol
 
 See [shremdup.proto](https://github.com/DiscreteTom/shremdup/blob/main/proto/shremdup.proto) for the gRPC definition.
