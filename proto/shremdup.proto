@@ -54,6 +54,7 @@ message DisplayInfo {
   int32 rotation = 6;
   uint32 pixel_width = 7;
   uint32 pixel_height = 8;
+  bool is_primary = 9;
 }
 
 message PointerPosition {

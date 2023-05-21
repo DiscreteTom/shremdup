@@ -6,7 +6,8 @@ use rusty_duplication::{
   duplication_context::DuplicationContext,
   error::Error,
   manager::Manager,
-  utils::FrameInfoExt,
+  model::Result,
+  utils::{FrameInfoExt, MonitorInfoExt},
 };
 use std::collections::HashMap;
 use windows::Win32::Graphics::Dxgi::{DXGI_ERROR_WAIT_TIMEOUT, DXGI_OUTPUT_DESC};
@@ -24,7 +25,10 @@ pub async fn manager_thread(mut rx: ReplyReceiver) {
           .contexts
           .iter()
           .for_each(|ctx| match ctx.dxgi_output_desc() {
-            Ok(dxgi_output_desc) => displays.push(get_display_info(&dxgi_output_desc, ctx)),
+            Ok(dxgi_output_desc) => match get_display_info(&dxgi_output_desc, ctx) {
+              Ok(info) => displays.push(info),
+              Err(err) => println!("ListDisplays: {:?}", err),
+            },
             Err(err) => println!("ListDisplays: {:?}", err),
           });
         ShremdupReply::ListDisplays(Ok(displays))
@@ -32,9 +36,10 @@ pub async fn manager_thread(mut rx: ReplyReceiver) {
       ShremdupRequest::GetDisplay(id) => match manager.contexts.get(id as usize) {
         None => ShremdupReply::GetDisplay(Err(Error::new("invalid id"))),
         Some(ctx) => match ctx.dxgi_output_desc() {
-          Ok(dxgi_output_desc) => {
-            ShremdupReply::GetDisplay(Ok(get_display_info(&dxgi_output_desc, ctx)))
-          }
+          Ok(dxgi_output_desc) => match get_display_info(&dxgi_output_desc, ctx) {
+            Ok(info) => ShremdupReply::GetDisplay(Ok(info)),
+            Err(err) => ShremdupReply::GetDisplay(Err(err)),
+          },
           Err(err) => ShremdupReply::GetDisplay(Err(err)),
         },
       },
@@ -112,9 +117,12 @@ pub async fn manager_thread(mut rx: ReplyReceiver) {
   }
 }
 
-fn get_display_info(dxgi_output_desc: &DXGI_OUTPUT_DESC, ctx: &DuplicationContext) -> DisplayInfo {
+fn get_display_info(
+  dxgi_output_desc: &DXGI_OUTPUT_DESC,
+  ctx: &DuplicationContext,
+) -> Result<DisplayInfo> {
   let dxgi_outdupl_desc = ctx.dxgi_outdupl_desc();
-  DisplayInfo {
+  Ok(DisplayInfo {
     bottom: dxgi_output_desc.DesktopCoordinates.bottom,
     top: dxgi_output_desc.DesktopCoordinates.top,
     left: dxgi_output_desc.DesktopCoordinates.left,
@@ -123,5 +131,6 @@ fn get_display_info(dxgi_output_desc: &DXGI_OUTPUT_DESC, ctx: &DuplicationContex
     rotation: dxgi_output_desc.Rotation.0,
     pixel_width: dxgi_outdupl_desc.ModeDesc.Width,
     pixel_height: dxgi_outdupl_desc.ModeDesc.Height,
-  }
+    is_primary: ctx.monitor_info()?.is_primary(),
+  })
 }
