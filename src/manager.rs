@@ -9,7 +9,7 @@ use rusty_duplication::{
   utils::FrameInfoExt,
 };
 use std::collections::HashMap;
-use windows::Win32::Graphics::Dxgi::DXGI_OUTPUT_DESC;
+use windows::Win32::Graphics::Dxgi::{DXGI_ERROR_WAIT_TIMEOUT, DXGI_OUTPUT_DESC};
 
 pub async fn manager_thread(mut rx: ReplyReceiver) {
   let manager = Manager::new(0).unwrap();
@@ -69,7 +69,16 @@ pub async fn manager_thread(mut rx: ReplyReceiver) {
       ShremdupRequest::TakeCapture(id) => match capturer_map.get_mut(&id) {
         None => ShremdupReply::TakeCapture(Err(Error::new("invalid id"))),
         Some(capturer) => match capturer.safe_capture_with_pointer_shape() {
-          Err(err) => ShremdupReply::TakeCapture(Err(err)),
+          Err(err) => {
+            if err.windows.is_some()
+              && err.windows.as_ref().unwrap().code() == DXGI_ERROR_WAIT_TIMEOUT
+            {
+              // if error is timeout, return ok
+              ShremdupReply::TakeCapture(Ok((false, None, None)))
+            } else {
+              ShremdupReply::TakeCapture(Err(err))
+            }
+          }
           Ok((frame_info, pointer_shape_info)) => {
             if !frame_info.mouse_updated() {
               ShremdupReply::TakeCapture(Ok((frame_info.desktop_updated(), None, None)))
