@@ -21,7 +21,7 @@ jobs:
 
       - name: Move Protoc
         run: |
-          cp /opt/hostedtoolcache/protoc/3.20.3/x64/protoc .
+          cp /opt/hostedtoolcache/protoc/3.20.3/x64/bin/protoc .
 
       - name: Compile and release
         uses: rust-build/rust-build.action@v1.4.3
