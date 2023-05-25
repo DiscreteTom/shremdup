@@ -19,9 +19,9 @@ jobs:
         with:
           version: "3.20.3"
 
-      - name: Move Protoc
+      - name: Update PATH
         run: |
-          cp /opt/hostedtoolcache/protoc/3.20.3/x64/bin/protoc .
+          echo "/opt/hostedtoolcache/protoc/3.20.3/x64/bin" >> $GITHUB_PATH
 
       - name: Compile and release
         uses: rust-build/rust-build.action@v1.4.3
