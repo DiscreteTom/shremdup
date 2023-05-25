@@ -25,6 +25,12 @@ jobs:
           echo $PATH
           which protoc
 
+      - name: Test PATH
+        run: |
+          echo $PATH
+          which protoc
+          protoc --version
+
       - name: Compile and release
         uses: rust-build/rust-build.action@v1.4.3
         env:
