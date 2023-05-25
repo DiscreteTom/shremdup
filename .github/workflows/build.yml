@@ -16,6 +16,12 @@ jobs:
 
       - name: Install Protoc
         uses: arduino/setup-protoc@v1
+        with:
+          version: "3.20.3"
+
+      - name: Move Protoc
+        run: |
+          mv bin/protoc .
 
       - name: Compile and release
         uses: rust-build/rust-build.action@v1.4.3
