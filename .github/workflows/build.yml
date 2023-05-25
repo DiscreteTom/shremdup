@@ -13,6 +13,10 @@ jobs:
         target: [x86_64-pc-windows-gnu]
     steps:
       - uses: actions/checkout@master
+
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v1
+
       - name: Compile and release
         uses: rust-build/rust-build.action@v1.4.3
         env:
