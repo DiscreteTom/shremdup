@@ -10,4 +10,4 @@ export PROTOC=/usr/local/bin/protoc
 export RUST_LOG=debug
 
 # test the build
-cargo build
+RUST_LOG=debug cargo build
