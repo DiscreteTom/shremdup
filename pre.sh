@@ -6,3 +6,5 @@
 wget https://github.com/protocolbuffers/protobuf/releases/download/v3.20.3/protoc-3.20.3-linux-x86_64.zip
 unzip protoc-3.20.3-linux-x86_64.zip -d protoc3
 sudo mv protoc3/bin/* /usr/local/bin/
+echo $PATH
+which protoc
