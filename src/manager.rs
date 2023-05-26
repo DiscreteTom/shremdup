@@ -1,5 +1,6 @@
 use crate::model::{
-  DisplayInfo, PointerPosition, PointerShape, ReplyReceiver, ShremdupReply, ShremdupRequest,
+  DisplayInfo, PointerPosition, PointerShape, ReplySender, RequestReceiver, ShremdupReply,
+  ShremdupRequest,
 };
 use rusty_duplication::{
   capturer::{model::Capturer, shared::SharedCapturer},
@@ -12,12 +13,12 @@ use rusty_duplication::{
 use std::collections::HashMap;
 use windows::Win32::Graphics::Dxgi::{DXGI_ERROR_WAIT_TIMEOUT, DXGI_OUTPUT_DESC};
 
-pub async fn manager_thread(mut rx: ReplyReceiver) {
+pub async fn manager_thread(mut req_rx: RequestReceiver, res_tx: ReplySender) {
   let manager = Manager::new(0).unwrap();
   let mut capturer_map: HashMap<u32, SharedCapturer> = HashMap::new();
 
   loop {
-    let (req, tx) = rx.recv().await.unwrap();
+    let req = req_rx.recv().await.unwrap();
     let reply = match req {
       ShremdupRequest::ListDisplays => {
         let mut displays = Vec::new();
@@ -113,7 +114,7 @@ pub async fn manager_thread(mut rx: ReplyReceiver) {
         },
       },
     };
-    tx.send(reply).unwrap();
+    res_tx.send(reply).await.unwrap();
   }
 }
 

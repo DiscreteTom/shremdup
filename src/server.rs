@@ -6,7 +6,6 @@ use crate::model::{
 };
 use crate::model::{ServerMutex, ShremdupReply, ShremdupRequest};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
-use tokio::sync::oneshot;
 use tonic::transport::Server;
 use tonic::{Request, Response, Status};
 
@@ -27,16 +26,17 @@ impl Shremdup for TheShremdup {
     &self,
     _request: Request<ListDisplaysRequest>,
   ) -> Result<Response<ListDisplaysReply>, Status> {
-    let sender = self.mutex.lock().await;
-    let (tx, rx) = oneshot::channel(); // TODO: don't create a new channel every time
-    if let Err(err) = sender.send((ShremdupRequest::ListDisplays, tx)).await {
+    let mut guard = self.mutex.lock().await;
+    if let Err(err) = (guard.0).send(ShremdupRequest::ListDisplays).await {
       return Err(Status::internal(err.to_string()));
     }
-    match rx.await {
-      Err(_) => Err(Status::internal("failed to receive reply")),
-      Ok(ShremdupReply::ListDisplays(Ok(infos))) => Ok(Response::new(ListDisplaysReply { infos })),
-      Ok(ShremdupReply::ListDisplays(Err(err))) => Err(Status::internal(err.to_string())),
-      Ok(_) => Err(Status::internal("invalid reply")),
+    match (guard.1).recv().await {
+      None => Err(Status::internal("failed to receive reply")),
+      Some(ShremdupReply::ListDisplays(Ok(infos))) => {
+        Ok(Response::new(ListDisplaysReply { infos }))
+      }
+      Some(ShremdupReply::ListDisplays(Err(err))) => Err(Status::internal(err.to_string())),
+      Some(_) => Err(Status::internal("invalid reply")),
     }
   }
 
@@ -44,22 +44,21 @@ impl Shremdup for TheShremdup {
     &self,
     request: Request<GetDisplayRequest>,
   ) -> Result<Response<GetDisplayReply>, Status> {
-    let sender = self.mutex.lock().await;
-    let (tx, rx) = oneshot::channel();
+    let mut guard = self.mutex.lock().await;
     let request = request.into_inner();
-    if let Err(err) = sender
-      .send((ShremdupRequest::GetDisplay(request.id), tx))
+    if let Err(err) = (guard.0)
+      .send(ShremdupRequest::GetDisplay(request.id))
       .await
     {
       return Err(Status::internal(err.to_string()));
     }
-    match rx.await {
-      Err(_) => Err(Status::internal("failed to receive reply")),
-      Ok(ShremdupReply::GetDisplay(Ok(info))) => {
+    match (guard.1).recv().await {
+      None => Err(Status::internal("failed to receive reply")),
+      Some(ShremdupReply::GetDisplay(Ok(info))) => {
         Ok(Response::new(GetDisplayReply { info: Some(info) }))
       }
-      Ok(ShremdupReply::GetDisplay(Err(err))) => Err(Status::internal(err.to_string())),
-      Ok(_) => Err(Status::internal("invalid reply")),
+      Some(ShremdupReply::GetDisplay(Err(err))) => Err(Status::internal(err.to_string())),
+      Some(_) => Err(Status::internal("invalid reply")),
     }
   }
 
@@ -67,23 +66,23 @@ impl Shremdup for TheShremdup {
     &self,
     request: Request<CreateCaptureRequest>,
   ) -> Result<Response<CreateCaptureReply>, Status> {
-    let sender = self.mutex.lock().await;
-    let (tx, rx) = oneshot::channel();
+    let mut guard = self.mutex.lock().await;
     let request = request.into_inner();
-    if let Err(err) = sender
-      .send((
-        ShremdupRequest::CreateCapture(request.id, request.name, request.open),
-        tx,
+    if let Err(err) = (guard.0)
+      .send(ShremdupRequest::CreateCapture(
+        request.id,
+        request.name,
+        request.open,
       ))
       .await
     {
       return Err(Status::internal(err.to_string()));
     }
-    match rx.await {
-      Err(_) => Err(Status::internal("failed to receive reply")),
-      Ok(ShremdupReply::CreateCapture(Ok(_))) => Ok(Response::new(CreateCaptureReply {})),
-      Ok(ShremdupReply::CreateCapture(Err(err))) => Err(Status::internal(err.to_string())),
-      Ok(_) => Err(Status::internal("invalid reply")),
+    match (guard.1).recv().await {
+      None => Err(Status::internal("failed to receive reply")),
+      Some(ShremdupReply::CreateCapture(Ok(_))) => Ok(Response::new(CreateCaptureReply {})),
+      Some(ShremdupReply::CreateCapture(Err(err))) => Err(Status::internal(err.to_string())),
+      Some(_) => Err(Status::internal("invalid reply")),
     }
   }
 
@@ -91,20 +90,19 @@ impl Shremdup for TheShremdup {
     &self,
     request: Request<DeleteCaptureRequest>,
   ) -> Result<Response<DeleteCaptureReply>, Status> {
-    let sender = self.mutex.lock().await;
-    let (tx, rx) = oneshot::channel();
+    let mut guard = self.mutex.lock().await;
     let request = request.into_inner();
-    if let Err(err) = sender
-      .send((ShremdupRequest::DeleteCapture(request.id), tx))
+    if let Err(err) = (guard.0)
+      .send(ShremdupRequest::DeleteCapture(request.id))
       .await
     {
       return Err(Status::internal(err.to_string()));
     }
-    match rx.await {
-      Err(_) => Err(Status::internal("failed to receive reply")),
-      Ok(ShremdupReply::DeleteCapture(Ok(_))) => Ok(Response::new(DeleteCaptureReply {})),
-      Ok(ShremdupReply::DeleteCapture(Err(err))) => Err(Status::internal(err.to_string())),
-      Ok(_) => Err(Status::internal("invalid reply")),
+    match (guard.1).recv().await {
+      None => Err(Status::internal("failed to receive reply")),
+      Some(ShremdupReply::DeleteCapture(Ok(_))) => Ok(Response::new(DeleteCaptureReply {})),
+      Some(ShremdupReply::DeleteCapture(Err(err))) => Err(Status::internal(err.to_string())),
+      Some(_) => Err(Status::internal("invalid reply")),
     }
   }
 
@@ -112,26 +110,25 @@ impl Shremdup for TheShremdup {
     &self,
     request: Request<TakeCaptureRequest>,
   ) -> Result<Response<TakeCaptureReply>, Status> {
-    let sender = self.mutex.lock().await;
-    let (tx, rx) = oneshot::channel();
+    let mut guard = self.mutex.lock().await;
     let request = request.into_inner();
-    if let Err(err) = sender
-      .send((ShremdupRequest::TakeCapture(request.id), tx))
+    if let Err(err) = (guard.0)
+      .send(ShremdupRequest::TakeCapture(request.id))
       .await
     {
       return Err(Status::internal(err.to_string()));
     }
-    match rx.await {
-      Err(_) => Err(Status::internal("failed to receive reply")),
-      Ok(ShremdupReply::TakeCapture(Ok((desktop_updated, pointer_position, pointer_shape)))) => {
+    match (guard.1).recv().await {
+      None => Err(Status::internal("failed to receive reply")),
+      Some(ShremdupReply::TakeCapture(Ok((desktop_updated, pointer_position, pointer_shape)))) => {
         Ok(Response::new(TakeCaptureReply {
           desktop_updated,
           pointer_position,
           pointer_shape,
         }))
       }
-      Ok(ShremdupReply::TakeCapture(Err(err))) => Err(Status::internal(err.to_string())),
-      Ok(_) => Err(Status::internal("invalid reply")),
+      Some(ShremdupReply::TakeCapture(Err(err))) => Err(Status::internal(err.to_string())),
+      Some(_) => Err(Status::internal("invalid reply")),
     }
   }
 }

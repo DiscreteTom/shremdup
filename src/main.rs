@@ -25,13 +25,14 @@ async fn main() {
     }
   };
 
-  let (tx, rx) = mpsc::channel(1);
-  let mutex: ServerMutex = Arc::new(Mutex::new(tx));
+  let (req_tx, req_rx) = mpsc::channel(1);
+  let (res_tx, res_rx) = mpsc::channel(1);
+  let mutex: ServerMutex = Arc::new(Mutex::new((req_tx, res_rx)));
 
   tokio::spawn(async move {
     println!("running on localhost:{}", port);
     server_thread(mutex, port).await;
   });
 
-  manager_thread(rx).await;
+  manager_thread(req_rx, res_tx).await;
 }
