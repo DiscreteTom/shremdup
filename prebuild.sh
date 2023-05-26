@@ -8,3 +8,6 @@ unzip protoc-3.20.3-linux-x86_64.zip -d protoc3
 mv protoc3/bin/* /usr/local/bin/
 export PROTOC=/usr/local/bin/protoc
 export RUST_LOG=debug
+
+# test the build
+cargo build
