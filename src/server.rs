@@ -4,7 +4,7 @@ use crate::model::{
   GetDisplayReply, GetDisplayRequest, ListDisplaysReply, ListDisplaysRequest, TakeCaptureReply,
   TakeCaptureRequest,
 };
-use crate::model::{RequestSender, ServerMutex, ShremdupReply, ShremdupRequest};
+use crate::model::{ServerMutex, ShremdupReply, ShremdupRequest};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use tokio::sync::oneshot;
 use tonic::transport::Server;
@@ -13,12 +13,11 @@ use tonic::{Request, Response, Status};
 #[derive(Debug)]
 pub struct TheShremdup {
   mutex: ServerMutex,
-  sender: RequestSender,
 }
 
 impl TheShremdup {
-  pub fn new(mutex: ServerMutex, sender: RequestSender) -> Self {
-    Self { mutex, sender }
+  pub fn new(mutex: ServerMutex) -> Self {
+    Self { mutex }
   }
 }
 
@@ -28,9 +27,9 @@ impl Shremdup for TheShremdup {
     &self,
     _request: Request<ListDisplaysRequest>,
   ) -> Result<Response<ListDisplaysReply>, Status> {
-    let _ = self.mutex.lock().await;
-    let (tx, rx) = oneshot::channel();
-    if let Err(err) = self.sender.send((ShremdupRequest::ListDisplays, tx)).await {
+    let sender = self.mutex.lock().await;
+    let (tx, rx) = oneshot::channel(); // TODO: don't create a new channel every time
+    if let Err(err) = sender.send((ShremdupRequest::ListDisplays, tx)).await {
       return Err(Status::internal(err.to_string()));
     }
     match rx.await {
@@ -45,11 +44,10 @@ impl Shremdup for TheShremdup {
     &self,
     request: Request<GetDisplayRequest>,
   ) -> Result<Response<GetDisplayReply>, Status> {
-    let _ = self.mutex.lock().await;
+    let sender = self.mutex.lock().await;
     let (tx, rx) = oneshot::channel();
     let request = request.into_inner();
-    if let Err(err) = self
-      .sender
+    if let Err(err) = sender
       .send((ShremdupRequest::GetDisplay(request.id), tx))
       .await
     {
@@ -69,11 +67,10 @@ impl Shremdup for TheShremdup {
     &self,
     request: Request<CreateCaptureRequest>,
   ) -> Result<Response<CreateCaptureReply>, Status> {
-    let _ = self.mutex.lock().await;
+    let sender = self.mutex.lock().await;
     let (tx, rx) = oneshot::channel();
     let request = request.into_inner();
-    if let Err(err) = self
-      .sender
+    if let Err(err) = sender
       .send((
         ShremdupRequest::CreateCapture(request.id, request.name, request.open),
         tx,
@@ -94,11 +91,10 @@ impl Shremdup for TheShremdup {
     &self,
     request: Request<DeleteCaptureRequest>,
   ) -> Result<Response<DeleteCaptureReply>, Status> {
-    let _ = self.mutex.lock().await;
+    let sender = self.mutex.lock().await;
     let (tx, rx) = oneshot::channel();
     let request = request.into_inner();
-    if let Err(err) = self
-      .sender
+    if let Err(err) = sender
       .send((ShremdupRequest::DeleteCapture(request.id), tx))
       .await
     {
@@ -116,11 +112,10 @@ impl Shremdup for TheShremdup {
     &self,
     request: Request<TakeCaptureRequest>,
   ) -> Result<Response<TakeCaptureReply>, Status> {
-    let _ = self.mutex.lock().await;
+    let sender = self.mutex.lock().await;
     let (tx, rx) = oneshot::channel();
     let request = request.into_inner();
-    if let Err(err) = self
-      .sender
+    if let Err(err) = sender
       .send((ShremdupRequest::TakeCapture(request.id), tx))
       .await
     {
@@ -141,9 +136,9 @@ impl Shremdup for TheShremdup {
   }
 }
 
-pub async fn server_thread(mutex: ServerMutex, tx: RequestSender, port: u16) {
+pub async fn server_thread(mutex: ServerMutex, port: u16) {
   let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), port);
-  let shremdup = TheShremdup::new(mutex, tx);
+  let shremdup = TheShremdup::new(mutex);
 
   Server::builder()
     .add_service(ShremdupServer::new(shremdup))

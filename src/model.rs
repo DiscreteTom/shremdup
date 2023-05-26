@@ -2,9 +2,9 @@ use rusty_duplication::model::Result;
 use std::sync::Arc;
 use tokio::sync::{mpsc, oneshot, Mutex};
 
-pub type ServerMutex = Arc<Mutex<()>>;
 pub type RequestSender = mpsc::Sender<(ShremdupRequest, oneshot::Sender<ShremdupReply>)>;
 pub type ReplyReceiver = mpsc::Receiver<(ShremdupRequest, oneshot::Sender<ShremdupReply>)>;
+pub type ServerMutex = Arc<Mutex<RequestSender>>;
 
 tonic::include_proto!("shremdup");
 
