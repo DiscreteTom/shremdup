@@ -1,10 +1,13 @@
 # CHANGELOG
 
+## v0.1.3
+
+- Fix: monitor rotation. #2
+
 ## v0.1.2
 
 - Fix: https://github.com/DiscreteTom/HyperDesktopDuplication/issues/4.
 - Optimize code and performance.
-- CI: use GitHub Actions to build and release binaries.
 
 ## v0.1.1
 
