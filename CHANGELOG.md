@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.1.4
+
+Minify the output binary.
+
 ## v0.1.3
 
 - Fix: monitor rotation. #2
