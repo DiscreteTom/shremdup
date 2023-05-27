@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.1.5
+
+- Stop minify the output binary.
+
 ## v0.1.4
 
 Minify the output binary.
