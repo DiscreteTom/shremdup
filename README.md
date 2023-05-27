@@ -1,7 +1,8 @@
 # shremdup
 
-![license](https://img.shields.io/github/license/DiscreteTom/shremdup?style=flat-square)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/DiscreteTom/shremdup?style=flat-square)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/DiscreteTom/shremdup/build.yml?style=flat-square)](https://github.com/DiscreteTom/shremdup/actions/workflows/build.yml)
+![license](https://img.shields.io/github/license/DiscreteTom/shremdup?style=flat-square)
 
 Call Windows Desktop Duplication API through gRPC and shared-memory.
 
@@ -22,6 +23,10 @@ shremdup.exe <port>
 See [shremdup.proto](https://github.com/DiscreteTom/shremdup/blob/main/proto/shremdup.proto) for the gRPC definition.
 
 ## Build
+
+First, install `protoc` v23.2 following https://github.com/hyperium/tonic#windows.
+
+Then, run:
 
 ```bash
 cargo build --release
