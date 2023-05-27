@@ -2,10 +2,15 @@ syntax = "proto3";
 package shremdup;
 
 service Shremdup {
+  // get a list of all display infos
   rpc ListDisplays (ListDisplaysRequest) returns (ListDisplaysReply);
+  // get a display info by id
   rpc GetDisplay(GetDisplayRequest) returns (GetDisplayReply);
+  // create a capture
   rpc CreateCapture(CreateCaptureRequest) returns (CreateCaptureReply);
+  // delete a capture
   rpc DeleteCapture(DeleteCaptureRequest) returns (DeleteCaptureReply);
+  // update the capture image and info in the shared memory
   rpc TakeCapture(TakeCaptureRequest) returns (TakeCaptureReply);
 }
 
@@ -24,7 +29,11 @@ message GetDisplayReply {
 
 message CreateCaptureRequest {
   uint32 id = 1;
+  // the name of the shared memory
+  // starts with 'Global\' if you want to share it between processes
   string name = 2;
+  // if true, the capture will open the shared memory by name
+  // if false, the capture will create the shared memory by name
   bool open = 3;
 }
 message CreateCaptureReply {
@@ -51,6 +60,7 @@ message DisplayInfo {
   int32 left = 3;
   int32 right = 4;
   string name = 5;
+  // https://learn.microsoft.com/en-us/previous-versions/windows/desktop/legacy/bb173065(v=vs.85)
   int32 rotation = 6;
   uint32 pixel_width = 7;
   uint32 pixel_height = 8;
@@ -64,6 +74,7 @@ message PointerPosition {
 }
 
 message PointerShape {
+  // https://learn.microsoft.com/en-us/windows/win32/api/dxgi1_2/ne-dxgi1_2-dxgi_outdupl_pointer_shape_type
   uint32 shape_type = 1;
   uint32 width = 2;
   uint32 height = 3;
