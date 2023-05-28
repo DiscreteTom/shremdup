@@ -3,6 +3,7 @@
 ## v0.1.5
 
 - Stop minify the output binary.
+- Fix: wrong pointer shape info.
 
 ## v0.1.4
 
