@@ -86,10 +86,9 @@ pub async fn manager_thread(mut req_rx: RequestReceiver, res_tx: ReplySender) {
             }
           }
           Ok((frame_info, pointer_shape_info)) => {
-            if !frame_info.mouse_updated() {
+            if !frame_info.mouse_updated().position_updated {
               ShremdupReply::TakeCapture(Ok((frame_info.desktop_updated(), None, None)))
             } else {
-              let pointer_shape_info = pointer_shape_info.unwrap();
               ShremdupReply::TakeCapture(Ok((
                 frame_info.desktop_updated(),
                 Some(PointerPosition {
@@ -97,16 +96,15 @@ pub async fn manager_thread(mut req_rx: RequestReceiver, res_tx: ReplySender) {
                   x: frame_info.PointerPosition.Position.x,
                   y: frame_info.PointerPosition.Position.y,
                 }),
-                if capturer.pointer_shape_updated() {
-                  Some(PointerShape {
+                match pointer_shape_info {
+                  None => None,
+                  Some(pointer_shape_info) => Some(PointerShape {
                     shape_type: pointer_shape_info.Type,
                     width: pointer_shape_info.Width,
                     height: pointer_shape_info.Height,
                     pitch: pointer_shape_info.Pitch,
                     data: capturer.pointer_shape_buffer().to_vec(),
-                  })
-                } else {
-                  None
+                  }),
                 },
               )))
             }
