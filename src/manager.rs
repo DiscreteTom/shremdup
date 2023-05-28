@@ -126,7 +126,18 @@ fn get_display_info(
     top: dxgi_output_desc.DesktopCoordinates.top,
     left: dxgi_output_desc.DesktopCoordinates.left,
     right: dxgi_output_desc.DesktopCoordinates.right,
-    name: String::from_utf16_lossy(&dxgi_output_desc.DeviceName),
+    name: {
+      let mut real_len = dxgi_output_desc.DeviceName.len();
+      for i in 0..dxgi_output_desc.DeviceName.len() {
+        let c = dxgi_output_desc.DeviceName[i];
+        // c-string is terminated by 0
+        if c == 0 {
+          real_len = i;
+          break;
+        }
+      }
+      String::from_utf16_lossy(&dxgi_output_desc.DeviceName[..real_len])
+    },
     rotation: dxgi_output_desc.Rotation.0,
     pixel_width: dxgi_outdupl_desc.ModeDesc.Width,
     pixel_height: dxgi_outdupl_desc.ModeDesc.Height,

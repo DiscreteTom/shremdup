@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.1.6
+
+- Fix: unhandled c-string in `DisplayInfo.name`.
+
 ## v0.1.5
 
 - Stop minify the output binary.
