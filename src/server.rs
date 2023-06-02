@@ -1,8 +1,8 @@
 use crate::model::shremdup_server::{Shremdup, ShremdupServer};
 use crate::model::{
   CreateCaptureReply, CreateCaptureRequest, DeleteCaptureReply, DeleteCaptureRequest,
-  GetDisplayReply, GetDisplayRequest, ListDisplaysReply, ListDisplaysRequest, TakeCaptureReply,
-  TakeCaptureRequest,
+  GetDisplayReply, GetDisplayRequest, ListDisplaysReply, ListDisplaysRequest, RestartReply,
+  RestartRequest, TakeCaptureReply, TakeCaptureRequest,
 };
 use crate::model::{ServerMutex, ShremdupReply, ShremdupRequest};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
@@ -22,6 +22,22 @@ impl TheShremdup {
 
 #[tonic::async_trait]
 impl Shremdup for TheShremdup {
+  async fn restart(
+    &self,
+    _request: Request<RestartRequest>,
+  ) -> Result<Response<RestartReply>, Status> {
+    let mut guard = self.mutex.lock().await;
+    if let Err(err) = (guard.0).send(ShremdupRequest::Restart).await {
+      return Err(Status::internal(err.to_string()));
+    }
+    match (guard.1).recv().await {
+      None => Err(Status::internal("failed to receive reply")),
+      Some(ShremdupReply::Restart(Ok(()))) => Ok(Response::new(RestartReply {})),
+      Some(ShremdupReply::ListDisplays(Err(err))) => Err(Status::internal(err.to_string())),
+      Some(_) => Err(Status::internal("invalid reply")),
+    }
+  }
+
   async fn list_displays(
     &self,
     _request: Request<ListDisplaysRequest>,

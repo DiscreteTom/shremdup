@@ -2,6 +2,7 @@ syntax = "proto3";
 package shremdup;
 
 service Shremdup {
+  rpc Restart(RestartRequest) returns (RestartReply);
   // get a list of all display infos
   rpc ListDisplays (ListDisplaysRequest) returns (ListDisplaysReply);
   // get a display info by id
@@ -12,6 +13,11 @@ service Shremdup {
   rpc DeleteCapture(DeleteCaptureRequest) returns (DeleteCaptureReply);
   // update the capture image and info in the shared memory
   rpc TakeCapture(TakeCaptureRequest) returns (TakeCaptureReply);
+}
+
+message RestartRequest {
+}
+message RestartReply {
 }
 
 message ListDisplaysRequest {

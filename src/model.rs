@@ -12,6 +12,7 @@ tonic::include_proto!("shremdup");
 
 #[derive(Debug)]
 pub enum ShremdupRequest {
+  Restart,
   ListDisplays,
   GetDisplay(u32),
   CreateCapture(u32, String, bool),
@@ -21,6 +22,7 @@ pub enum ShremdupRequest {
 
 #[derive(Debug)]
 pub enum ShremdupReply {
+  Restart(Result<()>),
   ListDisplays(Result<Vec<DisplayInfo>>),
   GetDisplay(Result<DisplayInfo>),
   CreateCapture(Result<()>),

@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.1.7
+
+- Feat: add `Restart`.
+
 ## v0.1.6
 
 - Fix: unhandled c-string in `DisplayInfo.name`.
